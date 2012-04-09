@@ -1,0 +1,22 @@
+{
+  "author": "Nicholas Serra <nicks@ydekproductions.com> (nicholasserra.github.com)",
+  "name": "singleyet-worker",
+  "description": "singleyet worker",
+  "version": "0.0.1",
+  "homepage": "singleyet.com",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/nicholasserra/singleyet-worker.git"
+  },
+  "main": "main.js",
+  "dependencies": {
+    "mysql": "*",
+    "postmark-api": "*",
+    "facebook-client": "*"
+  },
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  }
+}

@@ -1,5 +1,5 @@
 var util = require('util'),
-    postmark = require('postmark-api')("APIKEYHERE"),
+    postmark = require('postmark-api')("***REMOVED***"),
     mysql = require('mysql'),
     FacebookClient = require("facebook-client").FacebookClient,
     client = mysql.createClient({
@@ -16,7 +16,19 @@ var util = require('util'),
         {
             "timeout": 10000
         }
-    );
+    ),
+    relationship_codes = {};
+    
+//load relationship statusees
+client.query('SELECT * FROM `rel_status`', function iterate(error, results, fields) {
+    if(results.length > 0)
+    {
+        for (var i = 0; i < results.length; i++)
+        {
+            relationship_codes[results[i]['name']] = results[i]['id'];
+        }
+    }
+});
 
 singleYet = function(){
     client.query('SELECT * FROM `followed` JOIN `user` on followed.user_id = user.id', function iterate(error, results, fields) {
@@ -41,9 +53,9 @@ checkResult = function(db_result)
         'access_token': db_result['token']
     };
     
-    fb_client.graphCall('/me', params)(function(fb_result) {
-        var rel_status = 1; //testing
-        if (rel_status != db_result['rel_status']) //(if fb_result['relationship'] != result['rel_status'])
+    fb_client.graphCall('/'+db_result['fb_id'], params)(function(fb_result) {
+                
+        if (fb_result['relationship_status'] in relationship_codes && parseInt(relationship_codes[fb_result['relationship_status']]) != parseInt(db_result['rel_status']))
         {
             //got a change, push notification and send email, then change db
             pushNotification(db_result, fb_result);
@@ -54,9 +66,8 @@ checkResult = function(db_result)
                 'UPDATE `followed` '+
                 'SET rel_status = ? '+
                 'WHERE id = ?',
-                [1, db_result['id']] //change me!
+                [parseInt(relationship_codes[fb_result['relationship_status']]), db_result['id']]
             );
-            
         }
     });
 }
@@ -73,6 +84,7 @@ pushNotification = function(db_data, fb_data)
 
 sendEmail = function(db_data, fb_data)
 {
+    return
     var to = db_data['email'],
         subject = 'so and so is now in a relationship',
         boby = '';

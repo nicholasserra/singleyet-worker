@@ -31,7 +31,7 @@ client.query('SELECT * FROM `rel_status`', function iterate(error, results, fiel
 });
 
 singleYet = function(){
-    client.query('SELECT * FROM `followed` JOIN `user` on followed.user_id = user.id', function iterate(error, results, fields) {
+    client.query('SELECT * FROM `followed` JOIN `user` on followed.user_id = user.id', function iterate(error, results) {
         if(results.length > 0)
         {
             for (var i = 0; i < results.length; i++)
@@ -46,16 +46,17 @@ singleYet = function(){
 
 checkResult = function(db_result)
 {
-    //connect to fb and check for new relationship
-    console.log(db_result);
-    
     params = {
         'access_token': db_result['token']
     };
     
+    //connect to fb and check for new relationship 
     fb_client.graphCall('/'+db_result['fb_id'], params)(function(fb_result) {
                 
-        if (fb_result['relationship_status'] in relationship_codes && parseInt(relationship_codes[fb_result['relationship_status']]) != parseInt(db_result['rel_status']))
+        if ('relationship_status' in fb_result && 
+            fb_result['relationship_status'] in relationship_codes && 
+            parseInt(relationship_codes[fb_result['relationship_status']]) != parseInt(db_result['rel_status'])
+        )
         {
             //got a change, push notification and send email, then change db
             pushNotification(db_result, fb_result);
@@ -77,17 +78,16 @@ pushNotification = function(db_data, fb_data)
     //add row to notificaitons table
     client.query(
       'INSERT INTO `notification`'+
-      'SET user_id = ?, followed_id = ?, message = ?',
-      [db_data['user_id'], db_data['followed_id'], 'so and so is now in a relationship' ]
+      'SET user_id = ?, followed_id = ?, message = ?, rel_status = ?',
+      [db_data['user_id'], db_data['id'], fb_data['name']+' is now '+fb_data['relationship_status'], parseInt(relationship_codes[fb_data['relationship_status']])]
     );
 }
 
 sendEmail = function(db_data, fb_data)
 {
-    return
     var to = db_data['email'],
-        subject = 'so and so is now in a relationship',
-        boby = '';
+        subject = fb_data['name']+' is now '+fb_data['relationship_status'],
+        body = fb_data['name']+' is now '+fb_data['relationship_status'];
     
     postmark.send({
         "From": "webmaster@singleyet.com",

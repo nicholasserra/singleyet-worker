@@ -2,6 +2,7 @@ var util = require('util'),
     postmark = require('postmark-api')("***REMOVED***"),
     mysql = require('mysql'),
     FacebookClient = require("facebook-client").FacebookClient,
+    raven = require('raven'),
     client = mysql.createClient({
         database: 'singleyet',
         //user: 'singleyet',
@@ -19,6 +20,8 @@ var util = require('util'),
     ),
     relationship_codes = {},
     jobs = 0;
+
+raven.patchGlobal('***REMOVED***');
     
 //load relationship statusees
 client.query('SELECT * FROM `rel_status`', function iterate(error, results, fields) {

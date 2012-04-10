@@ -12,7 +12,8 @@
   "dependencies": {
     "mysql": "*",
     "postmark-api": "*",
-    "facebook-client": "*"
+    "facebook-client": "*",
+    "raven": "*"
   },
   "devDependencies": {},
   "optionalDependencies": {},

@@ -34,9 +34,15 @@ client.query('SELECT * FROM `rel_status`', function iterate(error, results, fiel
 singleYet = function(){
     client.query('SELECT * FROM `followed` JOIN `user` on followed.user_id = user.id', function iterate(error, results) {
         if(results.length > 0){
+
             for (var i = 0; i < results.length; i++)
             {
-                checkResult(results[i]);
+                checkResult(results[i], function{
+                    if (i == results.length-1 && jobs == 0){
+                        //no jobs after for loop exhausted and all checks done
+                        client.end()
+                    }
+                });
             }
         }
         else{
@@ -46,7 +52,7 @@ singleYet = function(){
     });
 }
 
-checkResult = function(db_result){
+checkResult = function(db_result, callback){
     params = {
         'access_token': db_result['token']
     };
@@ -59,16 +65,19 @@ checkResult = function(db_result){
             parseInt(relationship_codes[fb_result['relationship_status']]) != parseInt(db_result['rel_status'])){
 
             //got a change, push notification and send email, then change db
+
+            jobs = jobs + 3;
+
             pushNotification(db_result, fb_result);
             sendEmail(db_result, fb_result);
             updateRow(db_result, fb_result);
         }
     });
+
+    callback();
 }
 
 pushNotification = function(db_data, fb_data){
-    jobs++;
-
     //add row to notificaitons table
     client.query(
         'INSERT INTO `notification`'+
@@ -81,7 +90,6 @@ pushNotification = function(db_data, fb_data){
 }
 
 sendEmail = function(db_data, fb_data){
-    jobs++;
 
     var to = db_data['email'],
         subject = fb_data['name']+' is now '+fb_data['relationship_status'],
@@ -98,7 +106,6 @@ sendEmail = function(db_data, fb_data){
 }
 
 updateRow = function(db_data, fb_data){
-    jobs++;
 
     //set new rel_status on table
     client.query(

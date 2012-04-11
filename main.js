@@ -58,13 +58,12 @@ singleYet = function(){
                 }
             }
             
-            console.log(sorted[0]['following']);
             for (var i = 0; i < sorted.length; i++){
                 checkResult(sorted[i], function(){
                     //end client check
                     if (i == sorted.length-1 && jobs == 0){
                         //no jobs after for loop exhausted and all checks done
-                        client.end()
+                        //client.end()
                     }
                 })
             }
@@ -80,6 +79,8 @@ checkResult = function(user_data, callback){
     params = {
         'access_token': user_data['token']
     };
+    
+    //console.log(user_data);
 
     params['batch'] = [];
 
@@ -90,21 +91,27 @@ checkResult = function(user_data, callback){
 
     //connect to fb and check for new relationship 
     fb_client.graphCall('/', params, "POST")(function(fb_results) {
-
+    
         var email_stories = [];
+        
 
         for (var i = 0; i < fb_results.length; i++){
+            
             var parsed_body = JSON.parse(fb_results[i]['body']);
 
             //look up which fb_id we're using
             for (var count = 0; count < user_data['following'].length; count++){
+                
+                
                 if (user_data['following'][count]['fb_id'] == parsed_body['id']){
+                    
                     //got the id, return DB relationship result
                     //if this gets exhausted then we fucked up
                     db_rel_status = user_data['following'][count]['rel_status'];
                     db_followed_id = user_data['following'][count]['followed_id'];
                     break;
                 }
+                
             }
 
             if ('relationship_status' in parsed_body && 
@@ -114,28 +121,40 @@ checkResult = function(user_data, callback){
                 //got a change, push notification and send email, then change db
                 jobs = jobs + 2;
 
-                pushNotification(db_followed_id, user_data, parsed_body);
-                updateRow(db_followed_id, parsed_body);
+                var message = '';
+                
+                pushNotification(user_data['user_id'], db_followed_id, message, parseInt(relationship_codes[parsed_body['relationship_status']]));
+                updateRow(db_followed_id, parseInt(relationship_codes[parsed_body['relationship_status']]));
                 
                 email_stories.push(parsed_body['name']+' is now '+parsed_body['relationship_status']);
             }
+            else if(!('relationship_status' in parsed_body) &&
+                parseInt(relationship_codes['Not set']) != parseInt(db_rel_status)){
+                
+                //got a change from being listed to not listed
+                jobs = jobs + 2;
+                
+                var message = '';
+
+                pushNotification(user_data['user_id'], db_followed_id, message, parseInt(relationship_codes['Not set']));
+                updateRow(db_followed_id, parseInt(relationship_codes['Not set']));
+                
+                email_stories.push(parsed_body['name']+' is no longer listing their relationship status');
+            }
         }
-        //jobs++;
-        //sendEmail(user_data, email_stories);
+        jobs++;
+        sendEmail(user_data, email_stories);
     });
 
     callback();
 }
 
-pushNotification = function(followed_id, user_data, fb_data){
+pushNotification = function(user_id, followed_id, message, rel_status){
     //add row to notificaitons table
-    console.log(followed_id);
-    console.log(user_data);
-    console.log(fb_data);
     client.query(
         'INSERT INTO `notification`'+
         'SET user_id = ?, followed_id = ?, message = ?, rel_status = ?',
-        [user_data['user_id'], followed_id, fb_data['name']+' is now '+fb_data['relationship_status'], parseInt(relationship_codes[fb_data['relationship_status']])],
+        [user_id, followed_id, message, rel_status],
         function(){
             subtractAndCheck();
         }
@@ -157,13 +176,13 @@ sendEmail = function(user_data, stories){
     });
 }
 
-updateRow = function(id, fb_data){
+updateRow = function(id, rel_status){
     //set new rel_status on table
     client.query(
         'UPDATE `followed` '+
         'SET rel_status = ? '+
         'WHERE id = ?',
-        [parseInt(relationship_codes[fb_data['relationship_status']]), id],
+        [rel_status, id],
         function(){
             subtractAndCheck();
         }
@@ -173,7 +192,7 @@ updateRow = function(id, fb_data){
 subtractAndCheck = function(){
     jobs--;
     if (jobs == 0){
-        client.end();
+        //client.end();
     }
 }
 

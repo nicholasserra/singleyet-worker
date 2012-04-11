@@ -62,7 +62,6 @@ singleYet = function(){
                 checkResult(sorted[i], function(){
                     if (i == sorted.length-1 && jobs == 0){
                         //no jobs after for loop exhausted and all checks done
-                        console.log('no jobs after for loop exhausted and all checks done');
                         client.end()
                     }
                 })

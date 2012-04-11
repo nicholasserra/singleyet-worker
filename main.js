@@ -5,11 +5,11 @@ var util = require('util'),
     raven = require('raven'),
     client = mysql.createClient({
         database: 'singleyet',
-        //user: 'singleyet',
-        //password: '***REMOVED***'
-        user: 'root',
-        password: 'root',
-        host: '10.0.100.32'
+        user: 'singleyet',
+        password: '***REMOVED***'
+        //user: 'root',
+        //password: 'root',
+        //host: '10.0.100.32'
     }),
     fb_client = new FacebookClient(
         "***REMOVED***",
@@ -21,7 +21,7 @@ var util = require('util'),
     relationship_codes = {},
     jobs = 0;
 
-//raven.patchGlobal('***REMOVED***');
+raven.patchGlobal('***REMOVED***');
 
 //load relationship statusees
 client.query('SELECT * FROM `rel_status`', function iterate(error, results, fields) {

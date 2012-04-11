@@ -8,8 +8,8 @@ var util = require('util'),
         //user: 'singleyet',
         //password: '***REMOVED***'
         user: 'root',
-        password: 'yd3k',
-        host: '10.0.30.2'
+        password: 'root',
+        host: '10.0.100.32'
     }),
     fb_client = new FacebookClient(
         "***REMOVED***",
@@ -60,10 +60,10 @@ singleYet = function(){
             
             for (var i = 0; i < sorted.length; i++){
                 checkResult(sorted[i], function(){
-                    //end client check
                     if (i == sorted.length-1 && jobs == 0){
                         //no jobs after for loop exhausted and all checks done
-                        //client.end()
+                        console.log('no jobs after for loop exhausted and all checks done');
+                        client.end()
                     }
                 })
             }
@@ -80,8 +80,6 @@ checkResult = function(user_data, callback){
         'access_token': user_data['token']
     };
 
-    //console.log(user_data);
-
     params['batch'] = [];
 
     for (var i = 0; i < user_data['following'].length; i++)
@@ -91,7 +89,6 @@ checkResult = function(user_data, callback){
 
     //connect to fb and check for new relationship 
     fb_client.graphCall('/', params, "POST")(function(fb_results) {
-
         var email_stories = [];
 
         for (var i = 0; i < fb_results.length; i++){
@@ -142,17 +139,17 @@ checkResult = function(user_data, callback){
         }
         jobs++;
         sendEmail(user_data, email_stories);
-    });
 
-    callback();
+        callback();
+    });
 }
 
 pushNotification = function(user_id, followed_id, message, rel_status){
     //add row to notificaitons table
     client.query(
         'INSERT INTO `notification`'+
-        'SET user_id = ?, followed_id = ?, message = ?, rel_status = ?',
-        [user_id, followed_id, message, rel_status],
+        'SET user_id = ?, followed_id = ?, message = ?, rel_status = ?, timestamp = ?',
+        [user_id, followed_id, message, rel_status, Math.round((new Date()).getTime() / 1000)],
         function(){
             subtractAndCheck();
         }
@@ -190,7 +187,7 @@ updateRow = function(id, rel_status){
 subtractAndCheck = function(){
     jobs--;
     if (jobs == 0){
-        //client.end();
+        client.end();
     }
 }
 

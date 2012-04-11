@@ -41,7 +41,7 @@ singleYet = function(){
 
             for (var i = 0; i < results.length; i++){
                 var in_it = false;
-                
+
                 for (var count = 0; count < sorted.length; count++){
                     if (sorted[count]['user_id'] == results[i]['user_id']){
                         //already in list, append
@@ -79,7 +79,7 @@ checkResult = function(user_data, callback){
     params = {
         'access_token': user_data['token']
     };
-    
+
     //console.log(user_data);
 
     params['batch'] = [];
@@ -91,9 +91,8 @@ checkResult = function(user_data, callback){
 
     //connect to fb and check for new relationship 
     fb_client.graphCall('/', params, "POST")(function(fb_results) {
-    
+
         var email_stories = [];
-        
 
         for (var i = 0; i < fb_results.length; i++){
             
@@ -111,7 +110,6 @@ checkResult = function(user_data, callback){
                     db_followed_id = user_data['following'][count]['followed_id'];
                     break;
                 }
-                
             }
 
             if ('relationship_status' in parsed_body && 
@@ -121,7 +119,7 @@ checkResult = function(user_data, callback){
                 //got a change, push notification and send email, then change db
                 jobs = jobs + 2;
 
-                var message = '';
+                var message = parsed_body['name']+' is now '+parsed_body['relationship_status'];
                 
                 pushNotification(user_data['user_id'], db_followed_id, message, parseInt(relationship_codes[parsed_body['relationship_status']]));
                 updateRow(db_followed_id, parseInt(relationship_codes[parsed_body['relationship_status']]));
@@ -134,12 +132,12 @@ checkResult = function(user_data, callback){
                 //got a change from being listed to not listed
                 jobs = jobs + 2;
                 
-                var message = '';
+                var message = parsed_body['name']+' has hidden their relationship status.';
 
                 pushNotification(user_data['user_id'], db_followed_id, message, parseInt(relationship_codes['Not set']));
                 updateRow(db_followed_id, parseInt(relationship_codes['Not set']));
                 
-                email_stories.push(parsed_body['name']+' is no longer listing their relationship status');
+                email_stories.push(parsed_body['name']+' has hidden their relationship status');
             }
         }
         jobs++;

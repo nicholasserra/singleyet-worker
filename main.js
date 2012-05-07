@@ -156,18 +156,20 @@ pushNotification = function(user_id, followed_id, message, rel_status){
 }
 
 sendEmail = function(user_data, stories){
-    var to = user_data['email'],
-        subject = (stories.length == 1) ? fb_data['name']+' is now '+fb_data['relationship_status'] : "You have Single Yet notifications", 
-        body = stories.join('\n');
+    if (user_data['email_opt']){
+        var to = user_data['email'],
+            subject = (stories.length == 1) ? fb_data['name']+' is now '+fb_data['relationship_status'] : "You have Single Yet notifications", 
+            body = stories.join('\n');
 
-    postmark.send({
-        "From": "webmaster@singleyet.com",
-        "To": to,
-        "Subject": subject,
-        "TextBody": body
-    }, function(){
-        subtractAndCheck();
-    });
+        postmark.send({
+            "From": "webmaster@singleyet.com",
+            "To": to,
+            "Subject": subject,
+            "TextBody": body
+        }, function(){
+            subtractAndCheck();
+        });
+    }
 }
 
 updateRow = function(id, rel_status){

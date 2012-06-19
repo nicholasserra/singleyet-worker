@@ -40,7 +40,7 @@ client.query('SELECT * FROM `rel_status`', function iterate(error, results, fiel
 
 singleYet = function(){
     console.log('in main singleyet function');
-    client.query('SELECT user_id, followed.fb_id, rel_status, access_token, email, followed.id AS followed_id FROM `followed` JOIN `user` on followed.user_id = user.id', function iterate(error, results) {
+    client.query('SELECT user_id, followed.fb_id, rel_status_id, access_token, email, followed.id AS followed_id FROM `followed` JOIN `user` on followed.user_id = user.id', function iterate(error, results) {
         
         console.log('in client.query main function');
         

@@ -177,15 +177,20 @@ sendEmail = function(user_data, stories){
         var to = user_data['email'],
             subject = (stories.length == 1) ? fb_data['name']+' is now '+fb_data['relationship_status'] : "You have Single Yet notifications", 
             body = stories.join('\n');
-
+        
+        console.log('send email to '+to)
         postmark.send({
             "From": "webmaster@singleyet.com",
             "To": to,
             "Subject": subject,
             "TextBody": body
         }, function(){
+            console.log('good email send');
             subtractAndCheck();
         });
+    }
+    else{
+        subtractAndCheck();
     }
 }
 

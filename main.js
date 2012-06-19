@@ -40,7 +40,7 @@ client.query('SELECT * FROM `rel_status`', function iterate(error, results, fiel
 
 singleYet = function(){
     console.log('in main singleyet function');
-    client.query('SELECT user_id, followed.fb_id, rel_status_id, access_token, email, followed.id AS followed_id FROM `followed` JOIN `user` on followed.user_id = user.id', function iterate(error, results) {
+    client.query('SELECT user_id, followed.fb_id, rel_status_id, access_token, email, followed.id AS followed_id, email_opt FROM `followed` JOIN `user` on followed.user_id = user.id', function iterate(error, results) {
         
         console.log('in client.query main function');
         
@@ -63,7 +63,7 @@ singleYet = function(){
                     sorted[count]['following'].push({'fb_id': results[i]['fb_id'], 'rel_status_id': results[i]['rel_status_id'], 'followed_id': results[i]['followed_id']});
                 }
                 else{
-                    sorted.push({'user_id': results[i]['user_id'], 'email': results[i]['email'], 'access_token': results[i]['access_token'], 'following': [{'fb_id': results[i]['fb_id'], 'rel_status_id': results[i]['rel_status_id'], 'followed_id': results[i]['followed_id']}]});
+                    sorted.push({'user_id': results[i]['user_id'], 'email': results[i]['email'], 'access_token': results[i]['access_token'], 'email_opt': results[i]['email_opt'], 'following': [{'fb_id': results[i]['fb_id'], 'rel_status_id': results[i]['rel_status_id'], 'followed_id': results[i]['followed_id']}]});
                 }
             }
             

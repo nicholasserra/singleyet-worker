@@ -184,8 +184,10 @@ sendEmail = function(user_data, stories){
             "To": to,
             "Subject": subject,
             "TextBody": body
-        }, function(){
-            console.log('good email send');
+        }, function(err, res){
+            console.log(err);
+            console.log(response);
+            console.log('email callback');
             subtractAndCheck();
         });
     }

@@ -186,7 +186,7 @@ sendEmail = function(user_data, stories){
             "TextBody": body
         }, function(err, res){
             console.log('postmark error '+err);
-            console.log('postmark response '+response);
+            console.log('postmark response '+res);
             console.log('email callback done');
             subtractAndCheck();
         });

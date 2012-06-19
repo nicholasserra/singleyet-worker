@@ -25,16 +25,20 @@ raven.patchGlobal('***REMOVED***');
 
 //load relationship statusees
 client.query('SELECT * FROM `rel_status`', function iterate(error, results, fields) {
+    console.log('Got results from db on relationship statuses');
     if(results.length > 0)
     {
+        console.log('Got relationship statuses');
         for (var i = 0; i < results.length; i++)
         {
+            console.log(results[i]['name']);
             relationship_codes[results[i]['name']] = results[i]['id'];
         }
     }
 });
 
 singleYet = function(){
+    console.log('in main singleyet function');
     client.query('SELECT user_id, fb_id, rel_status, access_token, email, followed.id AS followed_id FROM `followed` JOIN `user` on followed.user_id = user.id', function iterate(error, results) {
         if(results.length > 0){
             var sorted = [];
@@ -69,12 +73,14 @@ singleYet = function(){
         }
         else{
             //no results
+            console.log('no followed results');
             client.end();
         }
     });
 }
 
 checkResult = function(user_data, callback){
+    console.log('in check result');
     params = {
         'access_token': user_data['access_token']
     };
@@ -144,6 +150,7 @@ checkResult = function(user_data, callback){
 }
 
 pushNotification = function(user_id, followed_id, message, rel_status){
+    console.log('add notification');
     //add row to notificaitons table
     client.query(
         'INSERT INTO `notification`'+
@@ -156,6 +163,7 @@ pushNotification = function(user_id, followed_id, message, rel_status){
 }
 
 sendEmail = function(user_data, stories){
+    console.log('send an email');
     if (user_data['email_opt']){
         var to = user_data['email'],
             subject = (stories.length == 1) ? fb_data['name']+' is now '+fb_data['relationship_status'] : "You have Single Yet notifications", 
@@ -173,6 +181,7 @@ sendEmail = function(user_data, stories){
 }
 
 updateRow = function(id, rel_status){
+    console.log('update followed row');
     //set new rel_status on table
     client.query(
         'UPDATE `followed` '+

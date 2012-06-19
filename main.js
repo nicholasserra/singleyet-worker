@@ -60,10 +60,10 @@ singleYet = function(){
                 }
 
                 if (in_it){
-                    sorted[count]['following'].push({'fb_id': results[i]['fb_id'], 'rel_status': results[i]['rel_status_id'], 'followed_id': results[i]['followed_id']});
+                    sorted[count]['following'].push({'fb_id': results[i]['fb_id'], 'rel_status_id': results[i]['rel_status_id'], 'followed_id': results[i]['followed_id']});
                 }
                 else{
-                    sorted.push({'user_id': results[i]['user_id'], 'email': results[i]['email'], 'access_token': results[i]['access_token'], 'following': [{'fb_id': results[i]['fb_id'], 'rel_status': results[i]['rel_status_id'], 'followed_id': results[i]['followed_id']}]});
+                    sorted.push({'user_id': results[i]['user_id'], 'email': results[i]['email'], 'access_token': results[i]['access_token'], 'following': [{'fb_id': results[i]['fb_id'], 'rel_status_id': results[i]['rel_status_id'], 'followed_id': results[i]['followed_id']}]});
                 }
             }
             
@@ -117,7 +117,7 @@ checkResult = function(user_data, callback){
                     
                     //got the id, return DB relationship result
                     //if this gets exhausted then we fucked up
-                    db_rel_status = user_data['following'][count]['rel_status'];
+                    db_rel_status = user_data['following'][count]['rel_status_id'];
                     db_followed_id = user_data['following'][count]['followed_id'];
                     break;
                 }
@@ -206,7 +206,8 @@ updateRow = function(id, rel_status){
         'SET rel_status_id = ? '+
         'WHERE id = ?',
         [rel_status, id],
-        function(){
+        function(error){
+            console.log(error);
             subtractAndCheck();
         }
     );

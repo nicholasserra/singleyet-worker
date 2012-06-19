@@ -35,7 +35,6 @@ client.query('SELECT * FROM `rel_status`', function iterate(error, results, fiel
             relationship_codes[results[i]['name']] = results[i]['id'];
         }
         singleYet();
-        
     }
 });
 
@@ -43,6 +42,7 @@ singleYet = function(){
     console.log('in main singleyet function');
     client.query('SELECT user_id, fb_id, rel_status, access_token, email, followed.id AS followed_id FROM `followed` JOIN `user` on followed.user_id = user.id', function iterate(error, results) {
         if(results.length > 0){
+            console.log('got results from followed table');
             var sorted = [];
 
             for (var i = 0; i < results.length; i++){
@@ -64,10 +64,14 @@ singleYet = function(){
                 }
             }
             
+            console.log('after main push loop');
+            
             for (var i = 0; i < sorted.length; i++){
+                console.log('in loop to check result');
                 checkResult(sorted[i], function(){
                     if (i == sorted.length-1 && jobs == 0){
                         //no jobs after for loop exhausted and all checks done
+                        console.log('no jobs after check loop done');
                         client.end()
                     }
                 })

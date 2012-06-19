@@ -192,6 +192,7 @@ sendEmail = function(user_data, stories){
         });
     }
     else{
+        console.log('opt out of email');
         subtractAndCheck();
     }
 }

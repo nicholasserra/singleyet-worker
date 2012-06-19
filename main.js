@@ -173,6 +173,7 @@ pushNotification = function(user_id, followed_id, message, rel_status){
 
 sendEmail = function(user_data, stories){
     console.log('send an email');
+    console.log(user_data['email_opt']);
     if (user_data['email_opt']){
         var to = user_data['email'],
             subject = (stories.length == 1) ? fb_data['name']+' is now '+fb_data['relationship_status'] : "You have Single Yet notifications", 

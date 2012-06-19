@@ -191,13 +191,13 @@ sendEmail = function(user_data, stories){
             "TextBody": body
         }, function(err, res){
             console.log('postmark error '+err);
-            console.log('postmark response '+res);
+            console.log('postmark response '+JSON.stringify(res));
             console.log('email callback done');
             subtractAndCheck();
         });
     }
     else{
-        console.log('opt out of email');
+        console.log('opt out of email or none to send');
         subtractAndCheck();
     }
 }
@@ -210,8 +210,8 @@ updateRow = function(id, rel_status){
         'SET rel_status_id = ? '+
         'WHERE id = ?',
         [rel_status, id],
-        function(error){
-            console.log('update row error '+error);
+        function(){
+            console.log('update row callback');
             subtractAndCheck();
         }
     );

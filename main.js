@@ -151,11 +151,9 @@ checkResult = function(user_data, callback){
                 email_stories.push(parsed_body['name']+' has hidden their relationship status');
             }
         }
-        
-        if (email_stories.length > 0){
-            jobs++;
-            sendEmail(user_data, email_stories);
-        }
+
+        jobs++;
+        sendEmail(user_data, email_stories);
 
         callback();
     });
@@ -176,7 +174,9 @@ pushNotification = function(user_id, followed_id, message, rel_status){
 
 sendEmail = function(user_data, stories){
     console.log('send an email');
-    if (user_data['email_opt']){
+    
+    
+    if (user_data['email_opt'] && stories.length > 0){
         var to = user_data['email'],
             subject = (stories.length == 1) ? fb_data['name']+' is now '+fb_data['relationship_status'] : "You have Single Yet notifications", 
             body = stories.join('\n');

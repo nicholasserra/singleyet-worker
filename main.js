@@ -34,6 +34,8 @@ client.query('SELECT * FROM `rel_status`', function iterate(error, results, fiel
             console.log(results[i]['name']);
             relationship_codes[results[i]['name']] = results[i]['id'];
         }
+        singleYet();
+        
     }
 });
 
@@ -200,5 +202,3 @@ subtractAndCheck = function(){
         client.end();
     }
 }
-
-singleYet();

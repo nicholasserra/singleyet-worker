@@ -60,10 +60,10 @@ singleYet = function(){
                 }
 
                 if (in_it){
-                    sorted[count]['following'].push({'fb_id': results[i]['fb_id'], 'rel_status': results[i]['rel_status'], 'followed_id': results[i]['followed_id']});
+                    sorted[count]['following'].push({'fb_id': results[i]['fb_id'], 'rel_status': results[i]['rel_status_id'], 'followed_id': results[i]['followed_id']});
                 }
                 else{
-                    sorted.push({'user_id': results[i]['user_id'], 'email': results[i]['email'], 'access_token': results[i]['access_token'], 'following': [{'fb_id': results[i]['fb_id'], 'rel_status': results[i]['rel_status'], 'followed_id': results[i]['followed_id']}]});
+                    sorted.push({'user_id': results[i]['user_id'], 'email': results[i]['email'], 'access_token': results[i]['access_token'], 'following': [{'fb_id': results[i]['fb_id'], 'rel_status': results[i]['rel_status_id'], 'followed_id': results[i]['followed_id']}]});
                 }
             }
             
@@ -163,7 +163,7 @@ pushNotification = function(user_id, followed_id, message, rel_status){
     //add row to notificaitons table
     client.query(
         'INSERT INTO `notification`'+
-        'SET user_id = ?, followed_id = ?, message = ?, rel_status = ?, timestamp = ?',
+        'SET user_id = ?, followed_id = ?, message = ?, rel_status_id = ?, timestamp = ?',
         [user_id, followed_id, message, rel_status, Math.round((new Date()).getTime() / 1000)],
         function(){
             subtractAndCheck();
@@ -202,7 +202,7 @@ updateRow = function(id, rel_status){
     //set new rel_status on table
     client.query(
         'UPDATE `followed` '+
-        'SET rel_status = ? '+
+        'SET rel_status_id = ? '+
         'WHERE id = ?',
         [rel_status, id],
         function(){

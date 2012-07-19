@@ -19,7 +19,8 @@ var util = require('util'),
         }
     ),
     relationship_codes = {},
-    jobs = 0;
+    jobs = 0,
+    lock = false;
 
 raven.patchGlobal('***REMOVED***');
 
@@ -89,6 +90,7 @@ singleYet = function(){
 }
 
 checkResult = function(user_data, callback){
+    lock = true;
     console.log('in check result');
     params = {
         'access_token': user_data['access_token']
@@ -154,7 +156,8 @@ checkResult = function(user_data, callback){
 
         jobs++;
         sendEmail(user_data, email_stories);
-
+        
+        lock = false;
         callback();
     });
 }
@@ -219,8 +222,8 @@ updateRow = function(id, rel_status){
 
 subtractAndCheck = function(){
     jobs--;
-    if (jobs == 0){
-        console.log('subtract and check CLIENT END');
+    if (jobs == 0 && !lock){
+        console.log('subtract and check CLIENT END NO LOCK');
         client.end();
     }
 }

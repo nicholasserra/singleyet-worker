@@ -77,7 +77,10 @@ singleYet = function(){
                 
                 (function(i){
                     console.log('in closure: '+i);
-                    checkResult(sorted[i], function(){
+                    
+                    
+                    
+                    checkResult(sorted[i], function(i){
                         console.log('in checkresult callback | i:'+i+' srtd.len-1:'+(sorted.length-1));
                         if (i == sorted.length-1){
                             //all jobs should be put in by now
@@ -104,7 +107,7 @@ singleYet = function(){
     });
 }
 
-checkResult = function(user_data, callback){
+checkResult = function(user_data,i, callback){
     //console.log('in check result');
     params = {
         'access_token': user_data['access_token']
@@ -171,7 +174,7 @@ checkResult = function(user_data, callback){
         jobs++;
         sendEmail(user_data, email_stories);
         
-        callback();
+        callback(i);
     });
 }
 

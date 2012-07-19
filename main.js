@@ -76,7 +76,7 @@ singleYet = function(){
                 
                 
                 (function(i){
-                    
+                    console.log('in closure: '+i);
                     checkResult(sorted[i], function(){
                         console.log('in checkresult callback | i:'+i+' srtd.len-1:'+(sorted.length-1));
                         if (i == sorted.length-1){
@@ -93,11 +93,7 @@ singleYet = function(){
                     
                     
                 })(i)
-                
-                var whydoesntthiswork = i;
 
-                
-                
             }
         }
         else{

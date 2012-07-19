@@ -80,7 +80,7 @@ singleYet = function(){
                     
                     
                     
-                    checkResult(sorted[i], function(i){
+                    checkResult(sorted[i], i, function(i){
                         console.log('in checkresult callback | i:'+i+' srtd.len-1:'+(sorted.length-1));
                         if (i == sorted.length-1){
                             //all jobs should be put in by now
@@ -107,7 +107,7 @@ singleYet = function(){
     });
 }
 
-checkResult = function(user_data,i, callback){
+checkResult = function(user_data, i, callback){
     //console.log('in check result');
     params = {
         'access_token': user_data['access_token']

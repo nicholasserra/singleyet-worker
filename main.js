@@ -220,6 +220,7 @@ updateRow = function(id, rel_status){
 subtractAndCheck = function(){
     jobs--;
     if (jobs == 0){
+        console.log('subtract and check CLIENT END');
         client.end();
     }
 }

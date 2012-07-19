@@ -20,19 +20,19 @@ var util = require('util'),
     ),
     relationship_codes = {},
     jobs = 0,
-    lock = false;
+    lock = true;
 
 raven.patchGlobal('***REMOVED***');
 
 //load relationship statusees
 client.query('SELECT * FROM `rel_status`', function iterate(error, results, fields) {
-    console.log('Got results from db on relationship statuses');
+    //console.log('Got results from db on relationship statuses');
     if(results.length > 0)
     {
-        console.log('Got relationship statuses');
+        //console.log('Got relationship statuses');
         for (var i = 0; i < results.length; i++)
         {
-            console.log(results[i]['name']);
+            //console.log(results[i]['name']);
             relationship_codes[results[i]['name']] = results[i]['id'];
         }
         singleYet();
@@ -40,13 +40,13 @@ client.query('SELECT * FROM `rel_status`', function iterate(error, results, fiel
 });
 
 singleYet = function(){
-    console.log('in main singleyet function');
+    //console.log('in main singleyet function');
     client.query('SELECT user_id, followed.fb_id, rel_status_id, access_token, email, followed.id AS followed_id, email_opt FROM `followed` JOIN `user` on followed.user_id = user.id', function iterate(error, results) {
         
-        console.log('in client.query main function');
+        //console.log('in client.query main function');
         
         if(results.length > 0){
-            console.log('got results from followed table');
+            //console.log('got results from followed table');
             var sorted = [];
 
             for (var i = 0; i < results.length; i++){
@@ -68,15 +68,20 @@ singleYet = function(){
                 }
             }
             
-            console.log('after main push loop');
+            //console.log('after main push loop');
             
             for (var i = 0; i < sorted.length; i++){
                 console.log('in loop to check result');
                 checkResult(sorted[i], function(){
-                    if (i == sorted.length-1 && jobs == 0){
-                        //no jobs after for loop exhausted and all checks done
-                        console.log('no jobs after check loop done');
-                        client.end()
+                    if (i == sorted.length-1){
+                        //all jobs should be put in by now
+                        lock = false;
+
+                        if (jobs == 0){
+                            //no jobs after for loop exhausted and all checks done
+                            console.log('no jobs after check loop done');
+                            client.end()
+                        }
                     }
                 })
             }
@@ -90,8 +95,7 @@ singleYet = function(){
 }
 
 checkResult = function(user_data, callback){
-    lock = true;
-    console.log('in check result');
+    //console.log('in check result');
     params = {
         'access_token': user_data['access_token']
     };
@@ -157,7 +161,6 @@ checkResult = function(user_data, callback){
         jobs++;
         sendEmail(user_data, email_stories);
         
-        lock = false;
         callback();
     });
 }
@@ -184,7 +187,7 @@ sendEmail = function(user_data, stories){
             subject = (stories.length == 1) ? fb_data['name']+' is now '+fb_data['relationship_status'] : "You have Single Yet notifications", 
             body = stories.join('\n');
             
-        console.log('email body '+body);
+        //console.log('email body '+body);
         
         console.log('send email to '+to)
         postmark.send({
@@ -223,7 +226,7 @@ updateRow = function(id, rel_status){
 subtractAndCheck = function(){
     jobs--;
     if (jobs == 0 && !lock){
-        console.log('subtract and check CLIENT END NO LOCK');
+        console.log('subtract and check CLIENT END');
         client.end();
     }
 }

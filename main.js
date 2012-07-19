@@ -107,7 +107,7 @@ singleYet = function(){
     });
 }
 
-checkResult = function(user_data, i, callback){
+checkResult = function(user_data, fb_increment, callback){
     //console.log('in check result');
     params = {
         'access_token': user_data['access_token']
@@ -174,7 +174,7 @@ checkResult = function(user_data, i, callback){
         jobs++;
         sendEmail(user_data, email_stories);
         
-        callback(i);
+        callback(fb_increment);
     });
 }
 

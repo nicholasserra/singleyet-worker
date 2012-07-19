@@ -72,9 +72,10 @@ singleYet = function(){
             
             for (var i = 0; i < sorted.length; i++){
                 console.log('in loop to check result');
+                var whydoesntthiswork = i;
                 checkResult(sorted[i], function(){
-                    console.log('in checkresult callback | i:'+i+' srtd.len-1:'+(sorted.length-1));
-                    if (i == sorted.length-1){
+                    console.log('in checkresult callback | i:'+whydoesntthiswork+' srtd.len-1:'+(sorted.length-1));
+                    if (whydoesntthiswork == sorted.length-1){
                         //all jobs should be put in by now
                         lock = false;
 

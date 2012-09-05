@@ -1,0 +1,3 @@
+SQLAlchemy
+requests-facebook
+python-postmark==0.3.1

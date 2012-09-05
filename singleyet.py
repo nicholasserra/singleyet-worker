@@ -22,6 +22,7 @@ class Notification(Base):
     message = Column(String)
     rel_status_id = Column(Integer)
     timestamp = Column(Integer)
+    fb_id = Column(Integer)
     
 class Followed(Base):
     __tablename__ = 'followed'
@@ -120,7 +121,8 @@ def main():
                             followed_id=followed['followed_id'],
                             message=message, 
                             rel_status_id=int(relationship_codes[parsed_body['relationship_status']]),
-                            timestamp=int(time.time())
+                            timestamp=int(time.time()),
+                            fb_id=followed['fb_id']
                         )
                         session.add(notification)
 
@@ -142,7 +144,8 @@ def main():
                             followed_id=followed['followed_id'],
                             message=message, 
                             rel_status_id=int(relationship_codes['Not set']),
-                            timestamp=int(time.time())
+                            timestamp=int(time.time()),
+                            fb_id=followed['fb_id']
                         )
                         session.add(notification)
 

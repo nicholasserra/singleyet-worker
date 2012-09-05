@@ -34,7 +34,7 @@ class Followed(Base):
 def main():
 
     #connect to db
-    engine = create_engine('mysql://root:yd3k@10.0.30.2/singleyet')
+    engine = create_engine('mysql://singleyet:***REMOVED***@localhost/singleyet')
     connection = engine.connect()
     Session = sessionmaker(bind=engine)
     session = Session()

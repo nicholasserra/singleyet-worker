@@ -112,7 +112,7 @@ def main():
 
                         #got a change!
                         #make and add message to email stories
-                        message = parsed_body['name']+' is now '+parsed_body['relationship_status']
+                        message = parsed_body['name']+' is now '+parsed_body['relationship_status'].lower()
                         email_stories.append(message);
 
                         #add DB notification

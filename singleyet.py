@@ -11,6 +11,9 @@ from postmark import PMMail
 POSTMARK_API_KEY = '***REMOVED***'
 
 import time
+import datetime
+
+today = datetime.datetime.today()
 
 Base = declarative_base()
 class Notification(Base):
@@ -127,9 +130,9 @@ def main():
                         session.add(notification)
 
                         #update row
-                        followed_row = session.query(Followed) \
-                                       .filter_by(id=followed['followed_id']) \
-                                       .update({Followed.rel_status_id: int(relationship_codes[parsed_body['relationship_status']])})
+                        session.query(Followed) \
+                           .filter_by(id=followed['followed_id']) \
+                           .update({Followed.rel_status_id: int(relationship_codes[parsed_body['relationship_status']])})
 
                     elif 'relationship_status' not in parsed_body and \
                     int(relationship_codes['Not set']) != int(followed['rel_status_id']):
@@ -150,16 +153,18 @@ def main():
                         session.add(notification)
 
                         #update row
-                        followed_row = session.query(Followed) \
-                                       .filter_by(id=followed['followed_id']) \
-                                       .update({Followed.rel_status_id: int(relationship_codes['Not set'])})
+                        session.query(Followed) \
+                           .filter_by(id=followed['followed_id']) \
+                           .update({Followed.rel_status_id: int(relationship_codes['Not set'])})
 
         #send email
         if item['email_opt'] and email_stories:
+            subject = today.strftime('A friend has changed their relationship - SingleYet %m/%d/%Y')
+            
             pmail = PMMail(api_key=POSTMARK_API_KEY,
                            sender="webmaster@singleyet.com",
                            to=item['email'],
-                           subject='You have new SingleYet notifications',
+                           subject=subject,
                            text_body='\n'.join(email_stories))
             pmail.send()
 

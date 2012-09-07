@@ -160,12 +160,15 @@ def main():
         #send email
         if item['email_opt'] and email_stories:
             subject = today.strftime('A friend has changed their relationship - SingleYet %m/%d/%Y')
-            
+
+            body = 'You have new SingleYet notifications!\n\n'
+            body = body+'\n'.join(email_stories)
+
             pmail = PMMail(api_key=POSTMARK_API_KEY,
                            sender="webmaster@singleyet.com",
                            to=item['email'],
                            subject=subject,
-                           text_body='\n'.join(email_stories))
+                           text_body=body)
             pmail.send()
 
     session.commit()

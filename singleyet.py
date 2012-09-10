@@ -3,7 +3,7 @@ from sqlalchemy import *
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from facebook import GraphAPI
+from facebook import GraphAPI, FacebookClientError
 import simplejson as json
 
 from postmark import PMMail
@@ -124,7 +124,7 @@ def main():
 
             try:
                 fb_results = graph.post('/', params=params)
-            except facebook.FacebookClientError:
+            except FacebookClientError:
                 #fb didn't like this, continue
                 continue
 
@@ -150,7 +150,11 @@ def main():
                             #got a change!
                             #make and add message to email stories
                             message = parsed_body['name']+' is now '+parsed_body['relationship_status'].lower()
-                            email_stories.append(message);
+                            email_stories.append({
+                                'id': parsed_body['id'],
+                                'message': message
+                            })
+                            #email_stories.append(message);
 
                             #add DB notification
                             notification = Notification(
@@ -171,9 +175,13 @@ def main():
                         elif 'relationship_status' not in parsed_body and \
                         int(relationship_codes['Not set']) != int(followed['rel_status_id']):
 
-                            #got a change from listed to not listed                        
+                            #got a change from listed to not listed
                             message = parsed_body['name']+' has hidden their relationship status.'
-                            email_stories.append(message)
+                            email_stories.append({
+                                'id': parsed_body['id'],
+                                'message': message
+                            })
+                            #email_stories.append(message)
 
                             #add DB notification
                             notification = Notification(
@@ -193,16 +201,24 @@ def main():
 
         #send email
         if item['email_opt'] and email_stories:
-            subject = today.strftime('A friend has changed their relationship - SingleYet %m/%d/%Y')
+            subject = today.strftime('People have changed their relationships - SingleYet %m/%d/%Y')
 
             body = 'You have new SingleYet notifications!\n\n'
-            body = body+'\n'.join(email_stories)
+            #body = body+'\n'.join(email_stories)
+
+            html_body = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/></head><body><div style="background-color: #1B1B1B;color: #fff;font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif;padding:3px 10px;font-size: 20px;color: #999;font-weight:200;margin-bottom: 15px;"><img src="http://singleyet.com/img/logo_sm.png" width="20"/> SingleYet?</div><strong>People have been changing their relationship statuses</strong><p>Check to see who is <em>single</em> and message them!</p><table width="320" cellspacing="7" style="margin: 10px 0 20px;">'
+            for story in email_stories:
+                body += '\n'+story['message']
+                html_body += '<tr><td width="50"><img src="https://graph.facebook.com/%(id)s/picture"/></td><td width="270"><p style="font-size:13px;color:#333;font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif;"> %(message)s<br/><a style="text-decoration: none;color:#08C;font-size:13px;font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif;" href="https://facebook.com/messages/%(id)s" target="_blank">Message</a></p></td></tr>' % {'id': story['id'], 'message': story['message']}
+
+            html_body += '</table><div style="font-size:11px;color:#ccc;border-top:1px solid #ccc;padding-top:5px;">This email was sent to <a style="text-decoration: none;color:#08C;font-size:11px;font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif;" href="mailto:%(email)s" target="_blank">%(email)s</a>. If you no longer wish to recieve these emails, <a style="text-decoration: none;color:#08C;font-size:11px;font-family: \'Helvetica Neue\',Helvetica,Arial,sans-serif;" href="http://singleyet.com/settings/" target="_blank">unsubscribe</a>.</div></body></html>' % {'email': item['email']}
 
             pmail = PMMail(api_key=POSTMARK_API_KEY,
                            sender="webmaster@singleyet.com",
                            to=item['email'],
                            subject=subject,
-                           text_body=body)
+                           text_body=body,
+                           html_body=html_body)
             pmail.send()
 
     session.commit()

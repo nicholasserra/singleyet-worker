@@ -122,7 +122,11 @@ def main():
 
             params['batch'] = json.dumps([{'method': 'GET', 'relative_url': '/'+c} for c in chunk])
 
-            fb_results = graph.post('/', params=params)
+            try:
+                fb_results = graph.post('/', params=params)
+            except facebook.FacebookClientError:
+                #fb didn't like this, continue
+                continue
 
             #iterate over all of the results from facebook
             for fb_result in fb_results:

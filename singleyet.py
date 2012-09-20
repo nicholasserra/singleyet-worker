@@ -8,28 +8,41 @@ import simplejson as json
 
 from postmark import PMMail
 
-from raven import Client
-
 import time
 import datetime
 
+import threading
+import Queue
+
+queue = Queue.Queue()
+
 POSTMARK_API_KEY = '***REMOVED***'
 
+from raven import Client
 client = Client('***REMOVED***')
 
 MYSQL_USERNAME = 'singleyet'
 MYSQL_PASSWORD = '***REMOVED***'
 MYSQL_HOST = 'localhost'
 
-'''
+
 MYSQL_USERNAME = 'root'
 MYSQL_PASSWORD = 'yd3k'
 MYSQL_HOST = '10.0.30.2'
-'''
+
 
 today = datetime.datetime.today()
 
 Base = declarative_base()
+
+#connect to db
+engine = create_engine('mysql://%s:%s@%s/singleyet' % (MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_HOST))
+connection = engine.connect()
+Session = sessionmaker(bind=engine)
+session = Session()
+
+relationship_codes = {}
+
 class Notification(Base):
     __tablename__ = 'notification'
 
@@ -51,15 +64,9 @@ class Followed(Base):
 
 def main():
 
-    #connect to db
-    engine = create_engine('mysql://%s:%s@%s/singleyet' % (MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_HOST))
-    connection = engine.connect()
-    Session = sessionmaker(bind=engine)
-    session = Session()
-
     #grab and sort relationship codes
     rel_result = connection.execute("SELECT * FROM `rel_status`")
-    relationship_codes = {}
+
 
     #gotta be a way to map this
     for row in rel_result:
@@ -106,6 +113,15 @@ def main():
 
     #make our batch graph call to facebook
     for item in srted:
+        queue.put(item)
+
+
+def worker():
+    while 1:
+        item = queue.get()
+        print 'job running'
+        #print item
+
         email_stories = []
 
         params = {'access_token': item['access_token']}
@@ -135,7 +151,40 @@ def main():
 
                 if not parsed_body:
                     #SENTRY ERROR LOG HERE
-                    client.captureMessage('Cannot json decode %s' % fb_result['body'])
+                    #client.captureMessage('Cannot json decode')
+
+                    #sometimes facebook gives us a false body to fuck with us
+                    #so lets just skip it
+
+                    '''
+                    {
+                        'body': 'false',
+                        'headers': [{
+                            'name': 'Access-Control-Allow-Origin',
+                            'value': '*'
+                        }, {
+                            'name': 'Cache-Control',
+                            'value': 'private, no-cache, no-store, must-revalidate'
+                        }, {
+                            'name': 'Connection',
+                            'value': 'close'
+                        }, {
+                            'name': 'Content-Type',
+                            'value': 'text/javascript; charset=UTF-8'
+                        }, {
+                            'name': 'ETag',
+                            'value': '"7cb6efb98ba5972a9b5090dc2e517fe14d12cb04"'
+                        }, {
+                            'name': 'Expires',
+                            'value': 'Sat, 01 Jan 2000 00:00:00 GMT'
+                        }, {
+                            'name': 'Pragma',
+                            'value': 'no-cache'
+                        }],
+                        'code': 200
+                    },
+                    '''
+
                     continue
 
                 #grab our fb db result from item following list from db
@@ -221,8 +270,18 @@ def main():
                            html_body=html_body)
             pmail.send()
 
-    session.commit()
-    connection.close()
+        queue.task_done()  # Let the queue know that the job is done
+
 
 if __name__ == '__main__':
+    # Start 10 background threads
+    for i in xrange(10):
+        thread = threading.Thread(target=worker)
+        thread.daemon = True
+        thread.start()
+
     main()
+
+    queue.join()  # Wait for all jobs to finish
+    session.commit()
+    connection.close()

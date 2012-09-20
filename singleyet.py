@@ -25,11 +25,11 @@ MYSQL_USERNAME = 'singleyet'
 MYSQL_PASSWORD = '***REMOVED***'
 MYSQL_HOST = 'localhost'
 
-
+'''
 MYSQL_USERNAME = 'root'
 MYSQL_PASSWORD = 'yd3k'
 MYSQL_HOST = '10.0.30.2'
-
+'''
 
 today = datetime.datetime.today()
 

@@ -156,6 +156,7 @@ def worker():
                 if not parsed_body.get('id'):
                     print parsed_body
                     print params
+                    continue
                 
                 if not parsed_body:
                     #SENTRY ERROR LOG HERE

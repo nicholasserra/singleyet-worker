@@ -147,8 +147,16 @@ def worker():
             #iterate over all of the results from facebook
             for fb_result in fb_results:
 
+                if not fb_result.get('body'):
+                    print fb_result
+                    continue
+
                 parsed_body = json.loads(fb_result['body'])
 
+                if not parsed_body.get('id'):
+                    print parsed_body
+                    print params
+                
                 if not parsed_body:
                     #SENTRY ERROR LOG HERE
                     #client.captureMessage('Cannot json decode')

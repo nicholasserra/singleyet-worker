@@ -284,13 +284,20 @@ def worker():
 
 if __name__ == '__main__':
     # Start 10 background threads
+    threads = []
     for i in xrange(10):
         thread = threading.Thread(target=worker)
         thread.daemon = True
+        threads.append(thread)
         thread.start()
 
     main()
 
-    queue.join()  # Wait for all jobs to finish
-    session.commit()
+    try:
+        queue.join()  # Wait for all jobs to finish
+        session.commit()
+    except KeyboardInterrupt:
+        for t in threads:
+            t.kill_received = True
+
     connection.close()

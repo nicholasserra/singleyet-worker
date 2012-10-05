@@ -141,8 +141,11 @@ def worker():
             try:
                 fb_results = graph.post('/', params=params)
             except FacebookClientError:
-                #fb didn't like this, continue
-                continue
+                try:
+                    fb_results = graph.post('/', params=params)
+                except FacebookClientError:
+                    #fb didn't like this, continue
+                    continue
 
             #iterate over all of the results from facebook
             for fb_result in fb_results:

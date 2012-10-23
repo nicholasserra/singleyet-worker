@@ -150,6 +150,9 @@ def worker():
             #iterate over all of the results from facebook
             if fb_results:
                 for fb_result in fb_results:
+                    
+                    if not fb_result:
+                        continue
                 
                     if not fb_result.get('body'):
                         print fb_result

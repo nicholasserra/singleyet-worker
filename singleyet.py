@@ -148,118 +148,119 @@ def worker():
                     continue
 
             #iterate over all of the results from facebook
-            for fb_result in fb_results:
-
-                if not fb_result.get('body'):
-                    print fb_result
-                    continue
-
-                parsed_body = json.loads(fb_result['body'])
-
-                if not parsed_body.get('id'):
-                    print parsed_body
-                    print params
-                    continue
+            if fb_results:
+                for fb_result in fb_results:
                 
-                if not parsed_body:
-                    #SENTRY ERROR LOG HERE
-                    #client.captureMessage('Cannot json decode')
-
-                    #sometimes facebook gives us a false body to fuck with us
-                    #so lets just skip it
-
-                    '''
-                    {
-                        'body': 'false',
-                        'headers': [{
-                            'name': 'Access-Control-Allow-Origin',
-                            'value': '*'
-                        }, {
-                            'name': 'Cache-Control',
-                            'value': 'private, no-cache, no-store, must-revalidate'
-                        }, {
-                            'name': 'Connection',
-                            'value': 'close'
-                        }, {
-                            'name': 'Content-Type',
-                            'value': 'text/javascript; charset=UTF-8'
-                        }, {
-                            'name': 'ETag',
-                            'value': '"7cb6efb98ba5972a9b5090dc2e517fe14d12cb04"'
-                        }, {
-                            'name': 'Expires',
-                            'value': 'Sat, 01 Jan 2000 00:00:00 GMT'
-                        }, {
-                            'name': 'Pragma',
-                            'value': 'no-cache'
-                        }],
-                        'code': 200
-                    },
-                    '''
-
-                    continue
-
-                #grab our fb db result from item following list from db
-                for followed in item['following']:
-                    if followed['fb_id'] == parsed_body['id']:
-                        #got our match, compare relationship statuses
-
-                        if 'relationship_status' in parsed_body and \
-                        parsed_body['relationship_status'] in relationship_codes and \
-                        int(relationship_codes[parsed_body['relationship_status']]) != int(followed['rel_status_id']):
-
-                            #got a change!
-                            #make and add message to email stories
-                            message = parsed_body['name']+' is now '+parsed_body['relationship_status'].lower()
-                            email_stories.append({
-                                'id': parsed_body['id'],
-                                'message': message
-                            })
-                            #email_stories.append(message);
-
-                            #add DB notification
-                            notification = Notification(
-                                user_id=item['user_id'], 
-                                followed_id=followed['followed_id'],
-                                message=message, 
-                                rel_status_id=int(relationship_codes[parsed_body['relationship_status']]),
-                                timestamp=int(time.time()),
-                                fb_id=followed['fb_id']
-                            )
-                            session.add(notification)
-
-                            #update row
-                            session.query(Followed) \
-                               .filter_by(id=followed['followed_id']) \
-                               .update({Followed.rel_status_id: int(relationship_codes[parsed_body['relationship_status']])})
-
-                        elif 'relationship_status' not in parsed_body and \
-                        int(relationship_codes['Not set']) != int(followed['rel_status_id']):
-
-                            #got a change from listed to not listed
-                            message = parsed_body['name']+' has hidden their relationship status.'
-                            email_stories.append({
-                                'id': parsed_body['id'],
-                                'message': message
-                            })
-                            #email_stories.append(message)
-
-                            #add DB notification
-                            notification = Notification(
-                                user_id=item['user_id'], 
-                                followed_id=followed['followed_id'],
-                                message=message, 
-                                rel_status_id=int(relationship_codes['Not set']),
-                                timestamp=int(time.time()),
-                                fb_id=followed['fb_id']
-                            )
-                            session.add(notification)
-
-                            #update row
-                            session.query(Followed) \
-                               .filter_by(id=followed['followed_id']) \
-                               .update({Followed.rel_status_id: int(relationship_codes['Not set'])})
-
+                    if not fb_result.get('body'):
+                        print fb_result
+                        continue
+                
+                    parsed_body = json.loads(fb_result['body'])
+                
+                    if not parsed_body.get('id'):
+                        print parsed_body
+                        print params
+                        continue
+                    
+                    if not parsed_body:
+                        #SENTRY ERROR LOG HERE
+                        #client.captureMessage('Cannot json decode')
+                
+                        #sometimes facebook gives us a false body to fuck with us
+                        #so lets just skip it
+                
+                        '''
+                        {
+                            'body': 'false',
+                            'headers': [{
+                                'name': 'Access-Control-Allow-Origin',
+                                'value': '*'
+                            }, {
+                                'name': 'Cache-Control',
+                                'value': 'private, no-cache, no-store, must-revalidate'
+                            }, {
+                                'name': 'Connection',
+                                'value': 'close'
+                            }, {
+                                'name': 'Content-Type',
+                                'value': 'text/javascript; charset=UTF-8'
+                            }, {
+                                'name': 'ETag',
+                                'value': '"7cb6efb98ba5972a9b5090dc2e517fe14d12cb04"'
+                            }, {
+                                'name': 'Expires',
+                                'value': 'Sat, 01 Jan 2000 00:00:00 GMT'
+                            }, {
+                                'name': 'Pragma',
+                                'value': 'no-cache'
+                            }],
+                            'code': 200
+                        },
+                        '''
+                
+                        continue
+                
+                    #grab our fb db result from item following list from db
+                    for followed in item['following']:
+                        if followed['fb_id'] == parsed_body['id']:
+                            #got our match, compare relationship statuses
+                
+                            if 'relationship_status' in parsed_body and \
+                            parsed_body['relationship_status'] in relationship_codes and \
+                            int(relationship_codes[parsed_body['relationship_status']]) != int(followed['rel_status_id']):
+                
+                                #got a change!
+                                #make and add message to email stories
+                                message = parsed_body['name']+' is now '+parsed_body['relationship_status'].lower()
+                                email_stories.append({
+                                    'id': parsed_body['id'],
+                                    'message': message
+                                })
+                                #email_stories.append(message);
+                
+                                #add DB notification
+                                notification = Notification(
+                                    user_id=item['user_id'], 
+                                    followed_id=followed['followed_id'],
+                                    message=message, 
+                                    rel_status_id=int(relationship_codes[parsed_body['relationship_status']]),
+                                    timestamp=int(time.time()),
+                                    fb_id=followed['fb_id']
+                                )
+                                session.add(notification)
+                
+                                #update row
+                                session.query(Followed) \
+                                   .filter_by(id=followed['followed_id']) \
+                                   .update({Followed.rel_status_id: int(relationship_codes[parsed_body['relationship_status']])})
+                
+                            elif 'relationship_status' not in parsed_body and \
+                            int(relationship_codes['Not set']) != int(followed['rel_status_id']):
+                
+                                #got a change from listed to not listed
+                                message = parsed_body['name']+' has hidden their relationship status.'
+                                email_stories.append({
+                                    'id': parsed_body['id'],
+                                    'message': message
+                                })
+                                #email_stories.append(message)
+                
+                                #add DB notification
+                                notification = Notification(
+                                    user_id=item['user_id'], 
+                                    followed_id=followed['followed_id'],
+                                    message=message, 
+                                    rel_status_id=int(relationship_codes['Not set']),
+                                    timestamp=int(time.time()),
+                                    fb_id=followed['fb_id']
+                                )
+                                session.add(notification)
+                
+                                #update row
+                                session.query(Followed) \
+                                   .filter_by(id=followed['followed_id']) \
+                                   .update({Followed.rel_status_id: int(relationship_codes['Not set'])})
+                
         #send email
         if item['email_opt'] and email_stories:
             subject = today.strftime('People have changed their relationships - SingleYet %m/%d/%Y')
